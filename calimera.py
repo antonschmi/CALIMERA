@@ -6,12 +6,14 @@ from sklearn.kernel_ridge import KernelRidge
 from sklearn.calibration import CalibratedClassifierCV
 
 
+
+
 class CALIMERA:
     def __init__(self, delay_penalty):
         self.delay_penalty = delay_penalty
 
     def _generate_timestamps(max_timestamp):
-        NUM_TIMESTAMPS = 20
+        NUM_TIMESTAMPS = 80 # adjust as needed
         num_intervals_between_timestamps = min(NUM_TIMESTAMPS-1, max_timestamp)
         step = max_timestamp // num_intervals_between_timestamps
         timestamps = np.arange(max(2, step), max_timestamp+step, step).astype(np.int32)
@@ -143,7 +145,7 @@ class WeakClassifier:
         mockup_clf = MockupClassifierForPassingValidationDataToSklearnCalibrator(
             X_probab, uncalibrated_clf.classes_
         )
-        calibrated_clf = CalibratedClassifierCV(mockup_clf, method="sigmoid", cv="prefit")
+        calibrated_clf = CalibratedClassifierCV(mockup_clf, method="sigmoid", cv="prefit", n_jobs=1, )
         mockup_X = np.zeros((y.shape[0], 1))
         calibrated_clf.fit(mockup_X, y)
 
@@ -164,18 +166,22 @@ class WeakClassifier:
 
     def get_labels(self):
         return self.clf.classes_
-
+    
 
 class MockupClassifierForPassingValidationDataToSklearnCalibrator:
     def __init__(self, mockup_scores, classes):
+        self._estimator_type = "classifier"
         self.mockup_scores = mockup_scores
         self.classes_ = classes
 
-    def fit(self):
-        pass
+    def fit(self, X, y=None):
+        # No-op for this mockup; you can include the fit logic if needed.
+        return self
 
     def decision_function(self, X):
         return self.mockup_scores
+
+
 
 
 class StoppingModule:
