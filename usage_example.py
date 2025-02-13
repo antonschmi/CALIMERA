@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import joblib
 
 from calimera import CALIMERA
 from sktime.datasets import load_from_tsfile_to_dataframe
@@ -52,8 +53,8 @@ if __name__ == '__main__':
     accuracy_scores = []
     earliness_scores = []
     cost_scores = []
-    delay_penalty = 0.5
-    for delay_penalty in range(1,10):
+    
+    for delay_penalty in range(1,11):
         model = CALIMERA(delay_penalty=delay_penalty/10)
         model.fit(X_train, y_train)
 
@@ -61,12 +62,14 @@ if __name__ == '__main__':
         
         accuracy = accuracy_score(y_test, y_pred)
         earliness = sum(stop_timestamps) / (X_test.shape[-1] * X_test.shape[0])
-        cost = 1.0 - accuracy + delay_penalty * earliness
+        cost = 1.0 - accuracy + delay_penalty/10 * earliness
         print(f'Accuracy: {accuracy}\nEarliness: {earliness}\nCost: {cost}')
 
         accuracy_scores.append(accuracy)
         earliness_scores.append(earliness)
         cost_scores.append(cost)
+        model_filename = f'saved_models/calimera_model_delay_{delay_penalty / 10}.joblib'
+        joblib.dump(model, model_filename)
     
 
     print(f'Accuracy scores: {accuracy_scores}')

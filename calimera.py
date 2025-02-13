@@ -20,11 +20,15 @@ class CALIMERA:
         timestamps[-1] = max_timestamp
         return timestamps
 
-    def _learn_feature_extractors(X, timestamps):
+    @staticmethod
+    def reshape_function(x):
+        return x.reshape(x.shape[0], -1)
+    
+    def _learn_feature_extractors(self, X, timestamps):
         extractors = []
         for timestamp in timestamps:
             if timestamp < 9:
-                extractors.append(lambda x: x.reshape(x.shape[0], -1))
+                extractors.append(self.reshape_function)
             else:
                 X_sub = X[:, :, :timestamp]
                 extractors.append(MiniRocketMultivariate().fit(X_sub).transform)
@@ -64,7 +68,7 @@ class CALIMERA:
 
     def fit(self, X_train, labels):
         timestamps = CALIMERA._generate_timestamps(max_timestamp=X_train.shape[-1])
-        self.feature_extractors = CALIMERA._learn_feature_extractors(X_train, timestamps)
+        self.feature_extractors = CALIMERA._learn_feature_extractors(self, X_train, timestamps)
         features_train = CALIMERA._get_features(X_train, self.feature_extractors, timestamps)
         self.classifiers = CALIMERA._learn_classifiers(features_train, labels, timestamps)
         predictors, costs = CALIMERA._generate_data_for_training_stopping_module(self.classifiers)
