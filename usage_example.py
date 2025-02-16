@@ -35,21 +35,26 @@ def load_bugsense_data():
 
     # Generate random split indices (70% train, 30% test)
     train_size = int(0.7 * n_samples)
+    test = int(0.3 * n_samples/2)
     indices = np.random.permutation(n_samples)
     train_indices = indices[:train_size]
-    test_indices = indices[train_size:]
+    val_indices = indices[train_size:train_size+test]
+    test_indices = indices[train_size+test:]
+    
 
     # Split data and labels
     X_train = data_grouped[train_indices]
     X_test = data_grouped[test_indices]
     y_train = labels_grouped[train_indices]
     y_test = labels_grouped[test_indices]
+    X_val = data_grouped[val_indices]
+    y_val = labels_grouped[val_indices]
 
 
-    return X_train, y_train.squeeze(), X_test, y_test.squeeze()
+    return X_train, y_train.squeeze(), X_val, y_val.squeeze(), X_test, y_test.squeeze()
 
 if __name__ == '__main__':
-    X_train, y_train, X_test, y_test = load_bugsense_data()
+    X_train, y_train, X_val, y_val, X_test, y_test = load_bugsense_data()
     accuracy_scores = []
     earliness_scores = []
     cost_scores = []
@@ -58,9 +63,9 @@ if __name__ == '__main__':
         model = CALIMERA(delay_penalty=delay_penalty/10)
         model.fit(X_train, y_train)
 
-        stop_timestamps, y_pred = model.test(X_test)
+        stop_timestamps, y_pred = model.test(X_val)
         
-        accuracy = accuracy_score(y_test, y_pred)
+        accuracy = accuracy_score(y_val, y_pred)
         earliness = sum(stop_timestamps) / (X_test.shape[-1] * X_test.shape[0])
         cost = 1.0 - accuracy + delay_penalty/10 * earliness
         print(f'Accuracy: {accuracy}\nEarliness: {earliness}\nCost: {cost}')
