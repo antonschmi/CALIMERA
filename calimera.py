@@ -97,11 +97,14 @@ class CALIMERA:
                     t==(self.timestamps.shape[0]-1) or \
                         self.stopping_module.should_stop(predictors, t)
                 )
-                if should_stop:
-                    predicted_label = self.classifiers[t].predict(features.reshape(1, -1))[0]
-                    stop_timestamps.append(self.timestamps[t])
-                    predicted_y.append(predicted_label)
-                    break
+                stop_timestamps.append(self.timestamps[t])
+                predicted_label = self.classifiers[t].predict(features.reshape(1, -1))[0]
+                predicted_y.append(predicted_label)
+                # if should_stop:
+                #     predicted_label = self.classifiers[t].predict(features.reshape(1, -1))[0]
+                #     stop_timestamps.append(self.timestamps[t])
+                #     predicted_y.append(predicted_label)
+                #     break
         return stop_timestamps, predicted_y
 
 

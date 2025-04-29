@@ -23,15 +23,16 @@ def load_example_data():
 
 
 def load_bugsense_data():
-    data = pd.read_csv('/media/storage/users/go98kef/TimeSeriesConversion/time_series_data.csv', header=None)
-    labels = pd.read_csv('/media/storage/users/go98kef/TimeSeriesConversion/time_series_labels.csv', header=None)
+    data = pd.read_csv('/media/storage/users/go98kef/TimeSeriesConversion/time_series_data_all_classes_norm.csv', header=None)
+    labels = pd.read_csv('/media/storage/users/go98kef/TimeSeriesConversion/time_series_labels_all_classes_norm.csv', usecols=[0], header=None)
+    labels_grouped = labels[0].astype(str).to_numpy()[::80]
 
     # Calculate number of complete groups of 80
     n_samples = len(data) // 80
 
     # Reshape data into groups of 80
     data_grouped = data.values.reshape(n_samples, 80, 24).transpose(0, 2, 1)
-    labels_grouped = labels.values[::80]  # Take every 80th label
+    
 
     # Generate random split indices (70% train, 30% test)
     train_size = int(0.7 * n_samples)
